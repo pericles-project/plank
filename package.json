@@ -9,6 +9,9 @@
   "author": "",
   "dependencies": {
     "express": "^4.4.1",
-    "nodegit": "^0.1.3"
+    "node-uuid": "^1.4.1",
+    "nodegit": "^0.1.3",
+    "restler": "^3.2.2",
+    "sha1": "^1.1.0"
   }
 }
