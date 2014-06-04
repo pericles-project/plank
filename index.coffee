@@ -72,4 +72,6 @@ app.post "/handlers/y", (req, res, next) ->
 
 app.all "/handlers/:action", require("./lib/middleware/enforcer")
 
+app.use require("./lib/middleware/error")
+
 app.listen PLANK_PORT
