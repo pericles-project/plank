@@ -5,10 +5,14 @@ git = require("nodegit")
 sha1 = require("sha1")
 
 plank =
-  getRepoPath: (repoUrl, branchName) =>
-    path = "/tmp/plank-#{sha1(repoUrl)}-#{branchName}"
-    console.info "Path for #{repoUrl} is #{path}."
-    return path
+  getRepoPath: (repoUrl, branchName) ->
+    repoName = @getRepoName repoUrl, branchName
+    repoPath = "/tmp/plank/#{repoName}.git"
+    console.info "Path for #{repoUrl} is #{repoPath}."
+    return repoPath
+
+  getRepoName: (repoUrl, branchName) ->
+    return "#{sha1(repoUrl)}-#{branchName}"
 
   getRepo: (remoteRepo, repoPath, cb) ->
     # Check if repo is cloned localy
