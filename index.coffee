@@ -5,7 +5,12 @@ uuid = require("node-uuid")
 fs = require("fs")
 restler = require("restler")
 
-PLANK_WF_URI = process.env.PLANK_WF_URI or "http://localhost:8000"
+PLANK_HOST = "localhost"
+PLANK_POST = process.env.PLANK_PORT or "7000"
+
+WFS_HOST = process.env.WFS_HOST or "localhost"
+WFS_PORT = process.env.WFS_PORT or "8000"
+WFS_URI = process.env.PLANK_WF_URI or "http://#{WFS_HOST}:#{WFS_PORT}"
 
 plank = require("./lib")
 
@@ -39,22 +44,22 @@ app.post "/handlers/zero", (req, res, next) ->
           commits[commitIdEdit] = "README.md"
 
           if req.query.forward
-            restler.get("http://localhost:#{process.env.PORT}/zero?repo=#{req.repoPath}")
+            restler.get("http://#{PLANK_HOST}:#{PLANK_PORT}/zero?repo=#{req.repoPath}")
 
           req.commits = commits
 
           return next()
 
-app.post "/handlers/encode-video", (req, res, next) ->
-  console.info "ffmpeg -.... #{req.repoPath}"
-  plank.commit "#{req.repoPath}/fuck-if-i-know.txt", "message", (err, commitId) ->
-    return next err if err
-
-    next()
+#app.post "/handlers/encode-video", (req, res, next) ->
+#  console.info "ffmpeg -.... #{req.repoPath}"
+#  plank.commit "#{req.repoPath}/fuck-if-i-know.txt", "message", (err, commitId) ->
+#    return next err if err
+#
+#    next()
 
 app.use (req, res, next) ->
   console.info "Figuring out what to do next..."
-  wUri = "#{PLANK_WF_URI}/workflows/#{req.wid}/#{req.wstep+1}"
+  wUri = "#{WFS_URI}/workflows/#{req.wid}/#{req.wstep+1}"
   console.info "Trying to get wf step from #{wUri}"
 
   restler.get wUri
@@ -64,4 +69,4 @@ app.use (req, res, next) ->
 
     return res.send req.commits
 
-app.listen process.env.PORT || 3000
+app.listen PLANK_PORT
