@@ -87,6 +87,4 @@ app.all "/handlers/:action", (req, res, next) ->
           wiid: req.queue.wiid
         params: result.params
 
-    return res.send req.queue
-
 app.listen PLANK_PORT

@@ -37,6 +37,8 @@ module.exports = (req, res, next) ->
   queue[wiid] ?= {}
   queue[wiid][wstep] = req.queue
 
+  res.send req.queue
+
   console.info "[REPO] Trying to clone #{xuri}..."
   plank.getRepo xuri, repoPath, (err, repo) ->
     return next err if err
