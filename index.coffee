@@ -6,7 +6,7 @@ fs = require("fs")
 restler = require("restler")
 
 PLANK_HOST = "localhost"
-PLANK_POST = process.env.PLANK_PORT or "7000"
+PLANK_PORT = process.env.PLANK_PORT or "7000"
 
 WFS_HOST = process.env.WFS_HOST or "localhost"
 WFS_PORT = process.env.WFS_PORT or "8000"
