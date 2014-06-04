@@ -26,7 +26,7 @@ module.exports = (req, res, next) ->
       name: plank.getRepoName xuri, wid
       path: plank.getRepoPath xuri, wid
     state: "PENDING"
-    commits: []
+    commits: {}
 
   queue[wiid] ?= {}
   queue[wiid][wstep] = req.state
