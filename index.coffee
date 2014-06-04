@@ -16,7 +16,7 @@ app.use bodyParser()
 app.all "/handlers/:action", require "./lib/middleware/repository"
 #app.use require "./lib/middleware/git-server"
 
-# curl -H "Content-Type: application/json" -d '{"payload":{"xid":"1","xuri":"https://github.com/pericles-project/tests.git","wid":"1/0"}}' http://localhost:3000/zero
+# curl -H "Content-Type: application/json" -d '{"payload":{"xid":"1","xuri":"https://github.com/pericles-project/tests.git","wid":"1/0"}}' http://localhost:7000/handlers/x
 
 queue = require("./lib/queue")
 
