@@ -31,40 +31,42 @@ app.get "/status/:wiid?/:wstep?", (req, res, next) ->
 
 app.post "/handlers/x", (req, res, next) ->
   console.info "[HANDLER:X] Handler triggered."
-  req.queue.state = "WORKING"
+  req.state.state = "WORKING"
 
   newFileName = "new-file-#{uuid.v4()}.tmp"
   console.info "[HANDLER:X] Adding new file with name '#{newFileName}'..."
   setTimeout =>
-    fs.appendFile "#{req.repoPath}/#{newFileName}", "New line or whatever...", (err) ->
+    fs.appendFile "#{req.state.repo.path}/#{newFileName}", "New line or whatever...", (err) ->
       return next err if err
 
       console.info "[HANDLER:X] Added."
       console.info "[HANDLER:X] Committing file..."
-      plank.commit req.repoPath, newFileName, "Create new random file.", (err, commitId) ->
+      message = "Create new random file."
+      plank.commit req.state.repo.path, newFileName, message, (err, commitId) ->
         return next err if err
 
         console.info "[HANDLER:X] Committed."
-        req.queue.commits.push "#{commitId}"
+        req.state.commits["#{commitId}"] = message
         return next()
   , 10 * 1000
 
 app.post "/handlers/y", (req, res, next) ->
   console.info "[HANDLER:Y] Handler triggered."
-  req.queue.state = "WORKING"
+  req.state.state = "WORKING"
 
   setTimeout =>
     console.info "[HANDLER:Y] Adding a new line to 'README.md'..."
-    fs.appendFile "#{req.repoPath}/README.md", "\r\nSomething happening...", (err) ->
+    fs.appendFile "#{req.state.repo.path}/README.md", "\r\nSomething happening...", (err) ->
       return next err if err
 
       console.info "[HANDLER:Y] Line added."
       console.info "[HANDLER:Y] Committing file..."
-      plank.commit req.repoPath, "README.md", "Modify readme file.", (err, commitId) ->
+      message = "Modify readme file."
+      plank.commit req.state.repo.path, "README.md", message, (err, commitId) ->
         return next err if err
 
         console.info "[HANDLER:Y] Committed."
-        req.queue.commits.push "#{commitId}"
+        req.state.commits["#{commitId}"] = message
         return next()
   , 10 * 1000
 

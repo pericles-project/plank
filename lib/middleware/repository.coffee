@@ -14,34 +14,28 @@ module.exports = (req, res, next) ->
   wstep = parseInt wstep
   wiid = req.body.payload.wiid or uuid.v4()
 
-  repoName = plank.getRepoName xuri, wid
-  repoPath = plank.getRepoPath xuri, wid
-
-  req.xid = xid
-  req.xuri = xuri
-  req.repoName = repoName
-  req.repoPath = repoPath
-
-  req.wid = wid
-  req.wstep = wstep
-  req.wiid = wiid
-
-  req.queue =
-    xid: xid
-    xuri: xuri
-    wid: "#{wid}/#{wstep}"
-    wiid: "#{wiid}/#{wstep}"
+  req.state =
+    payload:
+      xid: xid
+      xuri: xuri
+      wid: wid
+      wstep: wstep
+      wiid: wiid
+    params: req.body.params
+    repo:
+      name: plank.getRepoName xuri, wid
+      path: plank.getRepoPath xuri, wid
     state: "PENDING"
     commits: []
 
   queue[wiid] ?= {}
-  queue[wiid][wstep] = req.queue
+  queue[wiid][wstep] = req.state
 
   res.send req.queue
 
   console.info "[REPO] Trying to clone #{xuri}..."
-  plank.getRepo xuri, repoPath, (err, repo) ->
+  plank.getRepo xuri, req.state.repo.path, (err, repo) ->
     return next err if err
     console.info "[REPO] Cloned repo succesfully."
-    req.repo = repo
+    #req.repo = repo
     return next()
