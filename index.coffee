@@ -24,8 +24,13 @@ app.all "/handlers/:action", require "./lib/middleware/repository"
 
 queue = require("./lib/queue")
 
-app.get "/status/:wiid?", (req, res, next) ->
-  return res.send queue[req.query.wiid] if req.query?.wiid? and queue[req.query.wiid]?
+app.get "/status/:wiid?/:wstep?", (req, res, next) ->
+  if req.params?.wiid?
+    return res.send "Not found", 404 if not queue[req.params.wiid]
+    if req.params?.wstep? and queue[req.params.wiid][req.params.wstep]
+      return res.send "Not found", 404 if not queue[req.params.wiid][req.params.wstep]
+      return res.send queue[req.params.wiid][req.params.wstep]
+    return res.send queue[req.params.wiid]
   return res.send queue
 
 app.post "/handlers/x", (req, res, next) ->

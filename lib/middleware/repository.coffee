@@ -30,7 +30,7 @@ module.exports = (req, res, next) ->
     xid: xid
     xuri: xuri
     wid: "#{wid}/#{wstep}"
-    wiid: wiid
+    wiid: "#{wiid}/#{wstep}"
     state: "PENDING"
     commits: []
 
