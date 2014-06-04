@@ -1,4 +1,6 @@
 plank = require("../")
+queue = require("../queue")
+uuid = require("node-uuid")
 
 module.exports = (req, res, next) ->
   return next "Missing xIP id (xid) in body" if not req.body?.payload?.xid?
@@ -10,6 +12,7 @@ module.exports = (req, res, next) ->
   [wid, wstep] = req.body.payload.wid.split "/"
   return next "Workflow id does not contain step (/step)" if not wstep
   wstep = parseInt wstep
+  wiid = req.body.payload.wiid or uuid.v4()
 
   repoName = plank.getRepoName xuri, wid
   repoPath = plank.getRepoPath xuri, wid
@@ -21,8 +24,18 @@ module.exports = (req, res, next) ->
 
   req.wid = wid
   req.wstep = wstep
+  req.wiid = wiid
 
-  req.commits = []
+  req.queue =
+    xid: xid
+    xuri: xuri
+    wid: "#{wid}/#{wstep}"
+    wiid: wiid
+    state: "PENDING"
+    commits: []
+
+  queue[wiid] ?= {}
+  queue[wiid][wstep] = req.queue
 
   console.info "[REPO] Trying to clone #{xuri}..."
   plank.getRepo xuri, repoPath, (err, repo) ->

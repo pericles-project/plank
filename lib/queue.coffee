@@ -1,0 +1,3 @@
+queue = {}
+
+module.exports = queue
