@@ -8,7 +8,10 @@ module.exports = (req, res, next) ->
 
   xid = req.body.payload.xid
   xuri = req.body.payload.xuri
-  wid = req.body.payload.wid
+  [wid, wstep] = req.body.payload.wid.split "/"
+  return next "Workflow id does not contain step (/step)" if not wstep
+  wstep = parseInt wstep
+
   repoName = plank.getRepoName xuri, wid
   repoPath = plank.getRepoPath xuri, wid
 
@@ -16,6 +19,9 @@ module.exports = (req, res, next) ->
   req.xuri = xuri
   req.repoName = repoName
   req.repoPath = repoPath
+
+  req.wid = wid
+  req.wstep = wstep
 
   console.info "Trying to clone #{xuri}..."
   plank.getRepo xuri, repoPath, (err, repo) ->
