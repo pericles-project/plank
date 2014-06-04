@@ -22,50 +22,56 @@ app.use require "./lib/middleware/repository"
 
 # curl -H "Content-Type: application/json" -d '{"payload":{"xid":"1","xuri":"https://github.com/pericles-project/tests.git","wid":"1/0"}}' http://localhost:3000/zero
 
-app.post "/handlers/zero", (req, res, next) ->
-  newFileName = "new-file-#{uuid.v4()}.tmp"
+app.post "/handlers/x", (req, res, next) ->
+  console.info "[HANDLER:X] Handler triggered."
 
-  console.info "Add a new file named '#{newFileName} in #{req.repoPath}/#{newFileName}"
+  newFileName = "new-file-#{uuid.v4()}.tmp"
+  console.info "[HANDLER:X] Adding new file with name '#{newFileName}'..."
   fs.appendFile "#{req.repoPath}/#{newFileName}", "New line or whatever...", (err) ->
     return next err if err
 
-    console.info "Written a new file."
-    plank.commit req.repoPath, newFileName, "Create new random file.", (err, commitIdNew) ->
+    console.info "[HANDLER:X] Added."
+    console.info "[HANDLER:X] Committing file..."
+    plank.commit req.repoPath, newFileName, "Create new random file.", (err, commitId) ->
       return next err if err
 
-      fs.appendFile "#{req.repoPath}/README.md", "Something happening...\r\n", (err) ->
-        return next err if err
+      console.info "[HANDLER:X] Committed."
+      req.commits.push commitId
+      return next()
 
-        plank.commit req.repoPath, "README.md", "Modify readme file.", (err, commitIdEdit) ->
-          return next err if err
+app.post "/handlers/y", (req, res, next) ->
+  console.info "[HANDLER:Y] Handler triggered."
 
-          commits = {}
-          commits[commitIdNew] = newFileName
-          commits[commitIdEdit] = "README.md"
+  console.info "[HANDLER:Y] Adding a new line to 'README.md'..."
+  fs.appendFile "#{req.repoPath}/README.md", "\r\nSomething happening...", (err) ->
+    return next err if err
 
-          if req.query.forward
-            restler.get("http://#{PLANK_HOST}:#{PLANK_PORT}/zero?repo=#{req.repoPath}")
+    console.info "[HANDLER:Y] Line added."
+    console.info "[HANDLER:Y] Committing file..."
+    plank.commit req.repoPath, "README.md", "Modify readme file.", (err, commitId) ->
+      return next err if err
 
-          req.commits = commits
-
-          return next()
-
-#app.post "/handlers/encode-video", (req, res, next) ->
-#  console.info "ffmpeg -.... #{req.repoPath}"
-#  plank.commit "#{req.repoPath}/fuck-if-i-know.txt", "message", (err, commitId) ->
-#    return next err if err
-#
-#    next()
+      console.info "[HANDLER:Y] Committed."
+      req.commits.push commitId
+      return next()
 
 app.use (req, res, next) ->
-  console.info "Figuring out what to do next..."
+  console.info "[ENFORCER] Figuring out what to do next..."
   wUri = "#{WFS_URI}/workflows/#{req.wid}/#{req.wstep+1}"
-  console.info "Trying to get wf step from #{wUri}"
+  console.info "[ENFORCER] Trying to get wf step from #{wUri}"
 
   restler.get wUri
-  .on "complete", (result) =>
+  .on "complete", (result, response) =>
     return next result.message if result instanceof Error
-    console.info result
+
+    if response.statusCode is 200
+      console.info "[ENFORCER] Next step is for compoenent #{result.id} on #{result.url}..."
+      restler.postJson result.url,
+        payload:
+          xid: req.xid
+          xuri: req.xuri
+          wid: "#{req.wid}/#{req.wstep+1}"
+        params: result.params
 
     return res.send req.commits
 

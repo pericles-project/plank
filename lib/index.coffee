@@ -8,7 +8,7 @@ plank =
   getRepoPath: (repoUrl, branchName) ->
     repoName = @getRepoName repoUrl, branchName
     repoPath = "/tmp/plank/#{repoName}.git"
-    console.info "Path for #{repoUrl} is #{repoPath}."
+    console.info "[REPO] Path for #{repoUrl} is #{repoPath}."
     return repoPath
 
   getRepoName: (repoUrl, branchName) ->
